@@ -77,6 +77,9 @@ public class WindowsShareCopy extends Action {
       domain = config.netBiosDomainName;
     }
 
+    // Register the SMB File handler.
+    jcifs.Config.registerSmbURLHandler();
+
     // Authentication with NTLM and read the directory from the Windows Share.
     NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(domain, config.netBiosUsername,
                                                                      config.netBiosPassword);
@@ -112,6 +115,8 @@ public class WindowsShareCopy extends Action {
       in = fsmb.getInputStream();
       String name = fsmb.getName();
       Path nDest = new Path(dest, name);
+
+      LOG.info("Copying file {} to {}", smbSourceFile, nDest.toString());
 
       // If file already exists, then we skip over.
       if (hdfs.exists(nDest)) {
