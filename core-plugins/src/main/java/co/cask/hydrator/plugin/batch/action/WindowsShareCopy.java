@@ -99,17 +99,17 @@ public class WindowsShareCopy extends Action {
 
     for (String file : dir.list()) {
       if (smbDirectory.endsWith("/")) {
-        copyFileToHDFS(hdfs, smbDirectory + file, hdfsDir, conf);
+        copyFileToHDFS(hdfs, smbDirectory + file, hdfsDir);
       } else {
-        copyFileToHDFS(hdfs, smbDirectory + "/" + file, hdfsDir, conf);
+        copyFileToHDFS(hdfs, smbDirectory + "/" + file, hdfsDir);
       }
     }
   }
 
 
-  private void copyFileToHDFS(FileSystem hdfs, String smbSourceFile, Path dest, Configuration conf) {
+  private void copyFileToHDFS(FileSystem hdfs, String smbSourceFile, Path dest) {
     InputStream in = null;
-    OutputStream out = null;
+    BufferedOutputStream out = null;
 
     try {
       SmbFile fsmb = new SmbFile(smbSourceFile);
@@ -125,9 +125,8 @@ public class WindowsShareCopy extends Action {
         return;
       }
 
-      out = hdfs.create(nDest);
-      BufferedOutputStream bout = new BufferedOutputStream(out);
-      IOUtils.copyBytes(in, bout, conf);
+      out = new BufferedOutputStream(hdfs.create(nDest));
+      IOUtils.copyBytes(in, out, 1024 * 1024 * 1024);
     } catch (MalformedURLException e) {
       LOG.warn("Failed to copy file {}", smbSourceFile, e);
     } catch (IOException e) {
@@ -142,6 +141,7 @@ public class WindowsShareCopy extends Action {
       }
       if (out != null) {
         try {
+          out.flush();
           out.close();
         } catch (IOException e) {
           // Eat it up!
