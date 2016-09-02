@@ -35,6 +35,7 @@ import org.apache.hadoop.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -125,7 +126,8 @@ public class WindowsShareCopy extends Action {
       }
 
       out = hdfs.create(nDest);
-      IOUtils.copyBytes(in, out, conf);
+      BufferedOutputStream bout = new BufferedOutputStream(out);
+      IOUtils.copyBytes(in, bout, conf);
     } catch (MalformedURLException e) {
       LOG.warn("Failed to copy file {}", smbSourceFile, e);
     } catch (IOException e) {
