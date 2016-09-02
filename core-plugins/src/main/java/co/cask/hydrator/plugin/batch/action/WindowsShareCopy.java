@@ -64,7 +64,9 @@ public class WindowsShareCopy extends Action {
     sb.append(config.netBiosSharename);
     sb.append("/");
     if (config.sourceDirectory.startsWith("/")) {
-      sb.append(config.sourceDirectory.substring(1));
+      if (config.sourceDirectory.length() > 1) {
+        sb.append(config.sourceDirectory.substring(1));
+      }
     } else {
       sb.append(config.sourceDirectory);
     }
@@ -92,7 +94,11 @@ public class WindowsShareCopy extends Action {
     conf.setLong("io.file.buffer.size", config.bufferSize);
 
     for (String file : dir.list()) {
-      copyFileToHDFS(hdfs, file, hdfsDir, conf);
+      if (smbDirectory.endsWith("/")) {
+        copyFileToHDFS(hdfs, smbDirectory + file, hdfsDir, conf);
+      } else {
+        copyFileToHDFS(hdfs, smbDirectory + "/" + file, hdfsDir, conf);
+      }
     }
   }
 
