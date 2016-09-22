@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 
 /**
@@ -80,6 +79,7 @@ public class WindowsShareCopy extends Action {
 
     // Register the SMB File handler.
     jcifs.Config.registerSmbURLHandler();
+    jcifs.Config.setProperty("jcifs.util.loglevel", "4");
 
     // Authentication with NTLM and read the directory from the Windows Share.
     NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(domain, config.netBiosUsername,
@@ -99,20 +99,20 @@ public class WindowsShareCopy extends Action {
 
     for (String file : dir.list()) {
       if (smbDirectory.endsWith("/")) {
-        copyFileToHDFS(hdfs, smbDirectory + file, hdfsDir);
+        copyFileToHDFS(hdfs, smbDirectory + file, hdfsDir, auth);
       } else {
-        copyFileToHDFS(hdfs, smbDirectory + "/" + file, hdfsDir);
+        copyFileToHDFS(hdfs, smbDirectory + "/" + file, hdfsDir, auth);
       }
     }
   }
 
 
-  private void copyFileToHDFS(FileSystem hdfs, String smbSourceFile, Path dest) {
+  private void copyFileToHDFS(FileSystem hdfs, String smbSourceFile, Path dest, NtlmPasswordAuthentication auth) {
     InputStream in = null;
     BufferedOutputStream out = null;
 
     try {
-      SmbFile fsmb = new SmbFile(smbSourceFile);
+      SmbFile fsmb = new SmbFile(smbSourceFile, auth);
       in = fsmb.getInputStream();
       String name = fsmb.getName();
       Path nDest = new Path(dest, name);
